@@ -22,7 +22,7 @@
 
 
 import flask
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 import json
 app = Flask(__name__)
 app.debug = True
@@ -74,27 +74,33 @@ def flask_post_json():
 @app.route("/")
 def hello():
     '''Return something coherent here.. perhaps redirect to /static/index.html '''
-    return None
+    return send_from_directory('static', 'index.html')
 
 @app.route("/entity/<entity>", methods=['POST','PUT'])
 def update(entity):
+    request_json = flask_post_json()
+    myWorld.set(entity, request_json)
     '''update the entities via this interface'''
-    return None
+    return json.dumps(myWorld.get(entity)), 200
 
 @app.route("/world", methods=['POST','GET'])    
 def world():
     '''you should probably return the world here'''
-    return None
+    return json.dumps(myWorld.world()), 200
 
 @app.route("/entity/<entity>")    
 def get_entity(entity):
     '''This is the GET version of the entity interface, return a representation of the entity'''
-    return None
+    if entity in myWorld.world():
+        return json.dumps(myWorld.get(entity)), 200
+    else: 
+        return json.dumps({}), 200
 
 @app.route("/clear", methods=['POST','GET'])
 def clear():
+    myWorld.clear()
     '''Clear the world out!'''
-    return None
+    return "", 200
 
 if __name__ == "__main__":
     app.run()
